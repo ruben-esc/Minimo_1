@@ -1,20 +1,32 @@
 package edu.upc.dsa.models;
 
+import javax.xml.bind.annotation.XmlElement;
 import java.time.LocalDate;
 import java.util.Objects;
 
 public class Prestec {
+    @XmlElement(name = "idPrestec")
     private String idPrestec;
-    private String idLector;
-    private String ISBNLlibreCatalogat;
-    private LocalDate dataPrestec;
-    private LocalDate dataFinalDevolucio;
-    private String estat; // P. ex.: "En tràmit" [cite: 28]
 
-    public Prestec(String idPrestec, String idLector, String ISBNLlibreCatalogat, LocalDate dataPrestec, LocalDate dataFinalDevolucio) {
+    @XmlElement(name="idLector")
+    private String idLector;
+
+    @XmlElement(name="isbnllibreCatalogat")
+    private String isbnLlibreCatalogat;
+
+    @XmlElement(name="dataPrestec")
+    private LocalDate dataPrestec;
+
+    @XmlElement(name="dataFinalDevolucio")
+    private LocalDate dataFinalDevolucio;
+
+    @XmlElement(name="estat")
+    private String estat;
+
+    public Prestec(String idPrestec, String idLector, String isbnLlibreCatalogat, LocalDate dataPrestec, LocalDate dataFinalDevolucio) {
         this.idPrestec = idPrestec;
         this.idLector = idLector;
-        this.ISBNLlibreCatalogat = ISBNLlibreCatalogat;
+        this.isbnLlibreCatalogat = isbnLlibreCatalogat;
         this.dataPrestec = dataPrestec;
         this.dataFinalDevolucio = dataFinalDevolucio;
         this.estat = "En tràmit";
@@ -28,8 +40,8 @@ public class Prestec {
     public String getIdLector() {
         return idLector;
     }
-    public String getISBNLlibreCatalogat() {
-        return ISBNLlibreCatalogat;
+    public String getIsbnLlibreCatalogat() {
+        return isbnLlibreCatalogat;
     }
     public LocalDate getDataPrestec() {
         return dataPrestec;
@@ -41,7 +53,7 @@ public class Prestec {
         return estat;
     }
 
-    // --- SETTERS ---
+
     // Només es permet canviar l'estat per gestionar devolucions
     public void setEstat(String estat) {
         this.estat = estat;
@@ -62,6 +74,6 @@ public class Prestec {
 
     @Override
     public String toString() {
-        return "Prestec{ID=" + idPrestec + ", Lector=" + idLector + ", ISBN=" + ISBNLlibreCatalogat + ", Estat=" + estat + "}";
+        return "Prestec{ID=" + idPrestec + ", Lector=" + idLector + ", ISBN=" + isbnLlibreCatalogat + ", Estat=" + estat + "}";
     }
 }

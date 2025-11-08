@@ -21,12 +21,13 @@ import org.apache.log4j.Logger;
 public class BiblioManagerImpl implements BiblioManager {
 
     private static BiblioManagerImpl instance;
+    private int prestecCounter = 0;
 
     final static Logger logger = Logger.getLogger(BiblioManagerImpl.class);
 
     protected final Map<String, Lector> lectors;
     protected final Map<String, LlibreCatalogat> llibresCatalogats;
-    protected final List<Prestec> prestecs; // Utilitzem List (com a l'exemple del professor)
+    protected final List<Prestec> prestecs;
     protected final Queue<Stack<LlibreEmmagatzemat>> muntsLlibres;
 
     private BiblioManagerImpl() {
@@ -43,6 +44,11 @@ public class BiblioManagerImpl implements BiblioManager {
         return instance;
     }
 
+    private String generatePrestecId() {
+        prestecCounter++;
+        return "P" + prestecCounter;
+    }
+
     public void clear() {
         logger.warn("TRAÇA WARN: Netejant totes les estructures de dades internes per al test.");
         // Buidar les col·leccions
@@ -51,8 +57,6 @@ public class BiblioManagerImpl implements BiblioManager {
         this.prestecs.clear();
         this.muntsLlibres.clear();
 
-        // IMPORTANT: Restaurar l'estat inicial de la cua de munts
-        // Cal un munt buit inicial per a que la funció emmagatzemarLlibre funcioni correctament
         this.muntsLlibres.add(new Stack<>());
         logger.info("TRAÇA INFO: Estructures netejades i restaurades amb un munt inicial.");
     }
@@ -105,7 +109,6 @@ public class BiblioManagerImpl implements BiblioManager {
         logger.info("TRAÇA INFO: Inici catalogarLlibre. Sense paràmetres.");
 
         if (muntsLlibres.isEmpty() || muntsLlibres.peek().isEmpty()) {
-            // L'enunciat demana ERROR o FATAL
             logger.fatal("TRAÇA FATAL: No hi ha llibres pendents de catalogar.");
             throw new NoHiHaLlibresACatalogarException();
         }
@@ -113,7 +116,7 @@ public class BiblioManagerImpl implements BiblioManager {
         Stack<LlibreEmmagatzemat> primerMunt = muntsLlibres.peek();
         LlibreEmmagatzemat llibreAPop = primerMunt.pop();
         LlibreCatalogat llibreCatalogat;
-        String isbn = llibreAPop.getISBN();
+        String isbn = llibreAPop.getIsbn();
         boolean nouLlibre = false;
 
         if (llibresCatalogats.containsKey(isbn)) {
@@ -121,7 +124,7 @@ public class BiblioManagerImpl implements BiblioManager {
             llibreCatalogat.incrementarExemplars();
         } else {
             llibreCatalogat = new LlibreCatalogat(
-                    llibreAPop.getISBN(), llibreAPop.getTitol(), llibreAPop.getEditorial(),
+                    llibreAPop.getIsbn(), llibreAPop.getTitol(), llibreAPop.getEditorial(),
                     llibreAPop.getAnyPublicacio(), llibreAPop.getNumEdicio(), llibreAPop.getAutor(), llibreAPop.getTematica()
             );
             llibresCatalogats.put(isbn, llibreCatalogat);
@@ -136,14 +139,17 @@ public class BiblioManagerImpl implements BiblioManager {
             logger.info("TRAÇA INFO: Munt buit eliminat. Nou munt afegit si la cua és buida.");
         }
 
-        logger.info("TRAÇA INFO: Llibre catalogat retornat: " + llibreCatalogat + ". Nou ISBN: " + nouLlibre);
+        logger.info("TRAÇA INFO: Llibre catalogat retornat: " + llibreCatalogat + ". Nou isbn: " + nouLlibre);
         logger.info("TRAÇA INFO: Final catalogarLlibre.");
         return llibreCatalogat;
     }
 
     @Override
-    public void prestarLlibre(String idPrestec, String idLector, String isbnLlibre,
-                              LocalDate dataPrestec, LocalDate dataFinalDevolucio) throws PrestecException {
+    public void prestarLlibre(String idLector, String isbnLlibre) throws PrestecException {
+
+        String idPrestec = generatePrestecId();
+        LocalDate dataPrestec = LocalDate.now();
+        LocalDate dataFinalDevolucio = dataPrestec.plusWeeks(2);
 
         logger.info("TRAÇA INFO: Inici prestarLlibre. Paràmetres: idPrestec=" + idPrestec + ", idLector=" + idLector + ", isbnLlibre=" + isbnLlibre);
 
@@ -152,14 +158,14 @@ public class BiblioManagerImpl implements BiblioManager {
             throw new LectorNoExisteixException(idLector);
         }
         if (!llibresCatalogats.containsKey(isbnLlibre)) {
-            logger.error("TRAÇA ERROR: Llibre catalogat no existeix. ISBN: " + isbnLlibre);
+            logger.error("TRAÇA ERROR: Llibre catalogat no existeix. isbn: " + isbnLlibre);
             throw new LlibreNoExisteixException(isbnLlibre);
         }
 
         LlibreCatalogat llibre = llibresCatalogats.get(isbnLlibre);
 
         if (llibre.getExemplarsDisponibles() <= 0) {
-            logger.error("TRAÇA ERROR: Exemplars insuficients. ISBN: " + isbnLlibre);
+            logger.error("TRAÇA ERROR: Exemplars insuficients. isbn: " + isbnLlibre);
             throw new ExemplarsInsuficientsException(isbnLlibre, llibre.getExemplarsDisponibles());
         }
 

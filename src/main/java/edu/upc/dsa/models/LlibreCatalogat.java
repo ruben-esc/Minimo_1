@@ -3,7 +3,7 @@ package edu.upc.dsa.models;
 import java.util.Objects;
 
 public class LlibreCatalogat extends Llibre {
-    private int exemplarsDisponibles; // Quantitat total d'exemplars d'aquest ISBN
+    private int exemplarsDisponibles;
 
     // Constructor quan es cataloga el PRIMER exemplar
     public LlibreCatalogat(String ISBN, String titol, String editorial, int anyPublicacio, int numEdicio, String autor, String tematica) {
@@ -37,16 +37,16 @@ public class LlibreCatalogat extends Llibre {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         LlibreCatalogat that = (LlibreCatalogat) o;
-        return Objects.equals(ISBN, that.ISBN); // La clau és l'ISBN
+        return Objects.equals(isbn, that.isbn); // La clau és l'ISBN
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ISBN);
+        return Objects.hash(isbn);
     }
 
     @Override
     public String toString() {
-        return "LlibreCatalogat{ISBN=" + ISBN + ", Titol='" + titol + "', Disponibles=" + exemplarsDisponibles + "}";
+        return "LlibreCatalogat{ISBN=" + isbn + ", Titol='" + titol + "', Disponibles=" + exemplarsDisponibles + "}";
     }
 }

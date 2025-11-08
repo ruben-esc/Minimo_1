@@ -13,6 +13,7 @@ import edu.upc.dsa.exceptions.LlibreNoExisteixException;
 import edu.upc.dsa.exceptions.ExemplarsInsuficientsException;
 import edu.upc.dsa.exceptions.NoHiHaLlibresACatalogarException;
 
+import edu.upc.dsa.models.dto.PrestecRequest;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -71,7 +72,7 @@ public class BiblioService {
     @Path("/llibres/emmagatzemar")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response emmagatzemarLlibre(LlibreEmmagatzemat llibre) {
-        if (llibre.getId() == null || llibre.getISBN() == null) {
+        if (llibre.getId() == null || llibre.getIsbn() == null) {
             return Response.status(500).entity("Dades de llibre incompletes").build();
         }
         this.bm.emmagatzemarLlibre(llibre);
@@ -94,10 +95,8 @@ public class BiblioService {
             LlibreCatalogat lc = this.bm.catalogarLlibre();
             return Response.status(201).entity(lc).build();
         } catch (NoHiHaLlibresACatalogarException e) {
-            // Error explícit de l'enunciat: no hi ha contingut.
             return Response.status(404).entity(e.getMessage()).build();
         } catch (Exception e) {
-            // Qualsevol altre error inesperat
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
@@ -113,23 +112,19 @@ public class BiblioService {
     })
     @Path("/prestecs")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response prestarLlibre(Prestec prestec) {
-        if (prestec.getIdPrestec() == null || prestec.getIdLector() == null || prestec.getISBNLlibreCatalogat() == null) {
+    public Response prestarLlibre(PrestecRequest prestec) {
+        if (prestec.getIdLector() == null || prestec.getIdLector() == null || prestec.getIsbnLlibreCatalogat() == null) {
             return Response.status(500).entity("Dades del préstec incompletes").build();
         }
 
         try {
             this.bm.prestarLlibre(
-                    prestec.getIdPrestec(),
                     prestec.getIdLector(),
-                    prestec.getISBNLlibreCatalogat(),
-                    prestec.getDataPrestec(),
-                    prestec.getDataFinalDevolucio()
+                    prestec.getIsbnLlibreCatalogat()
             );
             return Response.status(201).build();
 
         } catch (LectorNoExisteixException | LlibreNoExisteixException | ExemplarsInsuficientsException e) {
-            // Errors de lògica de negoci (400 Bad Request)
             return Response.status(400).entity(e.getMessage()).build();
         }
     }
@@ -148,8 +143,8 @@ public class BiblioService {
         List<Prestec> prestecs = this.bm.consultarPrestecsLector(idLector);
 
         if (prestecs.isEmpty()) {
-            // Si el lector no té préstecs, retornem 404 (No trobat) o 200 amb llista buida.
-            // Escollim 404 per indicar que "no es van trobar resultats" (common practice).
+            // Si el lector no té préstecs, es retorna 404 (No trobat) o 200 amb llista buida.
+            // S'escull 404 per indicar que "no es van trobar resultats" (common practice).
             return Response.status(404).entity("Lector " + idLector + " sense préstecs registrats.").build();
         }
 

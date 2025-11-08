@@ -11,20 +11,15 @@ import edu.upc.dsa.models.Prestec;
 import edu.upc.dsa.exceptions.NoHiHaLlibresACatalogarException;
 import edu.upc.dsa.exceptions.PrestecException;
 
-public interface BiblioManager { // Canviat de GestorBiblioteca
+public interface BiblioManager {
 
-    // LECTORS
     boolean afegirNouLector(Lector lector);
 
-    // LLIBRES EMMAGATZEMATS
     void emmagatzemarLlibre(LlibreEmmagatzemat llibre);
 
-    // CATALOGACIÓ
     LlibreCatalogat catalogarLlibre() throws NoHiHaLlibresACatalogarException;
 
-    // PRÉSTECS
-    void prestarLlibre(String idPrestec, String idLector, String isbnLlibre,
-                       LocalDate dataPrestec, LocalDate dataFinalDevolucio) throws PrestecException;
+    void prestarLlibre(String idLector, String isbnLlibre) throws PrestecException;
 
     List<Prestec> consultarPrestecsLector(String idLector);
 }

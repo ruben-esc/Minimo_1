@@ -21,12 +21,9 @@ public class BiblioManagerTest {
 
     BiblioManager bm;
 
-    // Dades de prova
     private final LocalDate DATA_NAIXEMENT = LocalDate.of(1990, 1, 1);
     private final LocalDate DATA_PRESTEC = LocalDate.now();
-    private final LocalDate DATA_DEV = DATA_PRESTEC.plusWeeks(3);
 
-    // Dades inicials
     private Lector lectorInicial;
 
     @Before
@@ -35,11 +32,9 @@ public class BiblioManagerTest {
 
         ((BiblioManagerImpl)this.bm).clear();
 
-        // 2. Inicialitzar dades: Afegir un lector
         lectorInicial = new Lector("L1", "Test", "User", "12345678Z", DATA_NAIXEMENT, "BCN", "Adreça Test");
         this.bm.afegirNouLector(lectorInicial);
 
-        // 3. Inicialitzar dades: Emmagatzemar 3 llibres per catalogar (mateix ISBN)
         this.bm.emmagatzemarLlibre(new LlibreEmmagatzemat("E1", "978-A-001", "Programació 101", "Edit A", 2020, 1, "Autor X", "Tech"));
         this.bm.emmagatzemarLlibre(new LlibreEmmagatzemat("E2", "978-A-001", "Programació 101", "Edit A", 2020, 1, "Autor X", "Tech"));
         this.bm.emmagatzemarLlibre(new LlibreEmmagatzemat("E3", "978-B-002", "Disseny Patrons", "Edit B", 2022, 1, "Autor Y", "Tech"));
@@ -54,23 +49,21 @@ public class BiblioManagerTest {
 
     @Test
     public void emmagatzemarICatalogarTest() throws Exception {
-        // En setUp, hem afegit 3 llibres (2 al Munt 1, 1 al Munt 2 - si fos de 2)
-        // O bé, els 3 al Munt 1 (si el límit de 10 no s'ha arribat)
 
         // 1. Catalogar 1r llibre (E3: Disseny Patrons)
         LlibreCatalogat lc1 = this.bm.catalogarLlibre();
-        Assert.assertEquals("978-B-002", lc1.getISBN());
+        Assert.assertEquals("978-B-002", lc1.getIsbn());
         Assert.assertEquals(1, lc1.getExemplarsDisponibles());
 
         // 2. Catalogar 2n llibre (E2: Programació 101)
         LlibreCatalogat lc2 = this.bm.catalogarLlibre();
-        Assert.assertEquals("978-A-001", lc2.getISBN());
-        Assert.assertEquals(1, lc2.getExemplarsDisponibles()); // 1r exemplar d'aquest ISBN
+        Assert.assertEquals("978-A-001", lc2.getIsbn());
+        Assert.assertEquals(1, lc2.getExemplarsDisponibles());
 
         // 3. Catalogar 3r llibre (E1: Programació 101)
         LlibreCatalogat lc3 = this.bm.catalogarLlibre();
-        Assert.assertEquals("978-A-001", lc3.getISBN());
-        Assert.assertEquals(2, lc3.getExemplarsDisponibles()); // Ha d'incrementar-se
+        Assert.assertEquals("978-A-001", lc3.getIsbn());
+        Assert.assertEquals(2, lc3.getExemplarsDisponibles());
     }
 
     @Test(expected = NoHiHaLlibresACatalogarException.class)
@@ -107,7 +100,7 @@ public class BiblioManagerTest {
 
         // El setUp ha afegit E1, E2 (ISBN 978-A-001) i E3 (ISBN 978-B-002) al munt.
 
-        // 1. Catalogar TOTS els llibres (Això garanteix que '978-A-001' existeix al Map)
+        // 1. Catalogar TOTS els llibres
         // El primer en sortir és E3 (978-B-002)
         this.bm.catalogarLlibre();
         // El segon en sortir és E2 (978-A-001) -> Exemplars: 1
@@ -118,7 +111,7 @@ public class BiblioManagerTest {
         // Ara '978-A-001' té 2 exemplars disponibles
 
         // 2. Préstec exitós
-        this.bm.prestarLlibre("P1", lectorInicial.getId(), "978-A-001", DATA_PRESTEC, DATA_DEV);
+        this.bm.prestarLlibre(lectorInicial.getId(), "978-A-001");
 
         // 3. Comprovar consulta de préstecs
         List<Prestec> prestecs = this.bm.consultarPrestecsLector(lectorInicial.getId());
@@ -128,16 +121,16 @@ public class BiblioManagerTest {
 
     @Test(expected = LectorNoExisteixException.class)
     public void prestarLectorInexistentTest() throws Exception {
-        this.bm.prestarLlibre("P2", "L_NO_EXISTEIX", "978-A-001", DATA_PRESTEC, DATA_DEV);
+        this.bm.prestarLlibre("L_NO_EXISTEIX", "978-A-001");
     }
 
     @Test(expected = ExemplarsInsuficientsException.class)
     public void prestarSenseExemplarsTest() throws Exception {
         // PREPARACIÓ: Catalogar 1 exemplar i prestar-lo per deixar-lo a 0
         this.bm.catalogarLlibre(); // Exemplars: 1 (del 978-B-002)
-        this.bm.prestarLlibre("P3", lectorInicial.getId(), "978-B-002", DATA_PRESTEC, DATA_DEV); // Exemplars restants: 0
+        this.bm.prestarLlibre(lectorInicial.getId(), "978-B-002"); // Exemplars restants: 0
 
         // 2n Préstec ha de fallar
-        this.bm.prestarLlibre("P4", lectorInicial.getId(), "978-B-002", DATA_PRESTEC, DATA_DEV);
+        this.bm.prestarLlibre(lectorInicial.getId(), "978-B-002");
     }
 }
